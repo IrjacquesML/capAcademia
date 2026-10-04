@@ -10,9 +10,9 @@
     "lang": "fr",
     "icons": [
         {
-            "src": "/favicon.svg",
+            "src": "/images/logo-hec-kin.jpg",
             "sizes": "any",
-            "type": "image/svg+xml",
+            "type": "image/jpeg",
             "purpose": "any"
         }
     ]

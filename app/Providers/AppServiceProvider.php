@@ -31,13 +31,17 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(8)->by((string) $request->user()?->id);
         });
 
+        RateLimiter::for('api-login', function (Request $request) {
+            return Limit::perMinute(10)->by((string) $request->ip());
+        });
+
         Event::listen(Login::class, [RecordAuthenticationAudit::class, 'handleLogin']);
         Event::listen(Logout::class, [RecordAuthenticationAudit::class, 'handleLogout']);
         Event::listen(Failed::class, [RecordAuthenticationAudit::class, 'handleFailed']);
 
         // Binding global : un ID de cours hors triplet académique renvoie 404, pas 403.
         Route::bind('course', function (string $value) {
-            $user = auth()->user();
+            $user = auth('sanctum')->user() ?? auth()->user();
             abort_unless($user, 401);
 
             return Course::query()

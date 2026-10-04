@@ -2,6 +2,7 @@
     'faculties',
     'optionsJson',
     'promotions' => null,
+    'promotionsJson' => null,
     'selectedFaculty' => null,
     'selectedOption' => null,
     'selectedPromotion' => null,
@@ -33,11 +34,11 @@
     <option value="">Choisir…</option>
 </select>
 
-@if ($promotions)
+@if ($promotions || $promotionsJson !== null)
     <label class="mb-2 block text-sm">Promotion</label>
     <select name="promotion_id" id="promotion_id" @required($requirePromotion) class="{{ $field }}">
         <option value="">Choisir…</option>
-        @foreach ($promotions as $promotion)
+        @foreach ($promotions ?? [] as $promotion)
             <option value="{{ $promotion->id }}" @selected((string) old('promotion_id', $selectedPromotion) === (string) $promotion->id)>
                 {{ $promotion->name }}
             </option>
@@ -48,9 +49,12 @@
 <script>
     (function () {
         const optionsByFaculty = @json($optionsJson);
+        const promotionsByFacultyOption = @json($promotionsJson);
         const faculty = document.getElementById('faculty_id');
         const option = document.getElementById('option_id');
+        const promotion = document.getElementById('promotion_id');
         const selected = @json((string) old('option_id', $selectedOption ?? ''));
+        const selectedPromotion = @json((string) old('promotion_id', $selectedPromotion ?? ''));
 
         function fillOptions() {
             const list = optionsByFaculty[faculty.value] || [];
@@ -66,7 +70,30 @@
             });
         }
 
-        faculty.addEventListener('change', fillOptions);
+        function fillPromotions() {
+            if (!promotionsByFacultyOption || !promotion) {
+                return;
+            }
+
+            const list = (promotionsByFacultyOption[faculty.value] || {})[option.value] || [];
+            promotion.innerHTML = '<option value="">Choisir…</option>';
+            list.forEach(function (item) {
+                const el = document.createElement('option');
+                el.value = item.id;
+                el.textContent = item.name;
+                if (String(item.id) === String(selectedPromotion)) {
+                    el.selected = true;
+                }
+                promotion.appendChild(el);
+            });
+        }
+
+        faculty.addEventListener('change', function () {
+            fillOptions();
+            fillPromotions();
+        });
+        option.addEventListener('change', fillPromotions);
         fillOptions();
+        fillPromotions();
     })();
 </script>

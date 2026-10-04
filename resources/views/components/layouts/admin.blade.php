@@ -9,11 +9,10 @@
 <body class="app-shell bg-slate-50 text-slate-900 antialiased">
     <header class="z-30 shrink-0 border-b bg-white/95 backdrop-blur"
             style="padding-top: env(safe-area-inset-top)">
-        <div class="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4">
-            <a href="{{ route('admin.dashboard') }}" class="shrink-0 font-semibold text-indigo-700">
-                CapAcademia
+        <div class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
+            <x-brand :href="route('admin.dashboard')">
                 <span class="ml-1 text-xs font-normal uppercase tracking-wide text-slate-400">Admin</span>
-            </a>
+            </x-brand>
 
             <x-admin-nav class="hidden items-center gap-1 lg:flex" />
 

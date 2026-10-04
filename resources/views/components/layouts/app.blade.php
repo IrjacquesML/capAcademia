@@ -9,11 +9,8 @@
 <body class="app-shell bg-slate-50 text-slate-900 antialiased">
     <header class="z-30 shrink-0 border-b bg-white/95 backdrop-blur"
             style="padding-top: env(safe-area-inset-top)">
-        <div class="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4">
-            <a href="{{ auth()->check() ? route(auth()->user()->homeRoute()) : route('login') }}"
-               class="shrink-0 text-base font-semibold text-indigo-700">
-                CapAcademia
-            </a>
+        <div class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
+            <x-brand :href="auth()->check() ? route(auth()->user()->homeRoute()) : route('login')" />
 
             @auth
                 <x-student-nav class="hidden items-center gap-1 md:flex" />

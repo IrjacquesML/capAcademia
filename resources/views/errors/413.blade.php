@@ -6,7 +6,7 @@
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900">
     <main class="mx-auto max-w-lg px-4 py-16 sm:py-24" style="padding-top: max(4rem, env(safe-area-inset-top))">
-        <p class="text-sm font-medium text-indigo-700">CapAcademia</p>
+        <x-brand class="mb-2" />
         <h1 class="mt-2 text-2xl font-semibold">Le fichier est trop volumineux</h1>
         <p class="mt-4 text-slate-600">
             L’envoi dépasse la taille maximale autorisée
