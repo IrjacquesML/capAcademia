@@ -12,8 +12,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final email = TextEditingController(text: 'alice@univ.test');
-  final password = TextEditingController(text: 'password');
+  final email = TextEditingController();
+  final password = TextEditingController();
   bool loading = false;
   String? error;
 
@@ -34,7 +34,9 @@ class _LoginScreenState extends State<LoginScreen> {
     } on ApiException catch (e) {
       setState(() => error = e.message);
     } catch (_) {
-      setState(() => error = 'Impossible de joindre le serveur. Vérifiez l’URL API.');
+      setState(
+        () => error = 'Impossible de joindre le serveur. Vérifiez l’URL API.',
+      );
     } finally {
       if (mounted) {
         setState(() => loading = false);
@@ -60,7 +62,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(height: 16),
                     Text(
                       'Cours, chapitres et interrogations de votre faculté, option et promotion.',
-                      style: TextStyle(color: Color(0xFFC7D2FE), fontSize: 16, height: 1.4),
+                      style: TextStyle(
+                        color: Color(0xFFC7D2FE),
+                        fontSize: 16,
+                        height: 1.4,
+                      ),
                     ),
                   ],
                 ),
@@ -77,12 +83,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       if (MediaQuery.sizeOf(context).width < 800) ...[
-                        const Brand(large: true),
+                        const Brand(large: true, stacked: true),
                         const SizedBox(height: 24),
                       ],
-                      Text('Connexion', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
+                      Text(
+                        'Connexion',
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
                       const SizedBox(height: 6),
-                      const Text('Utilisez le compte CapAcademia de votre établissement.'),
+                      const Text(
+                        'Utilisez le compte CapAcademia de votre établissement.',
+                      ),
                       const SizedBox(height: 24),
                       TextField(
                         controller: email,
@@ -94,12 +106,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextField(
                         controller: password,
                         obscureText: true,
-                        decoration: const InputDecoration(labelText: 'Mot de passe'),
+                        decoration: const InputDecoration(
+                          labelText: 'Mot de passe',
+                        ),
                         onSubmitted: (_) => _submit(),
                       ),
                       if (error != null) ...[
                         const SizedBox(height: 12),
-                        Text(error!, style: const TextStyle(color: Color(0xFFB91C1C))),
+                        Text(
+                          error!,
+                          style: const TextStyle(color: Color(0xFFB91C1C)),
+                        ),
                       ],
                       const SizedBox(height: 20),
                       FilledButton(
@@ -113,6 +130,15 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        minimum: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+        child: const Text(
+          'Plateforme développée par ML DATA : +243982401411',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+        ),
       ),
     );
   }

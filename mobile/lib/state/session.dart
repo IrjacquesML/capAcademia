@@ -1,8 +1,22 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api/api_client.dart';
 import '../models/models.dart';
+
+class SessionScope extends InheritedNotifier<SessionController> {
+  const SessionScope({
+    super.key,
+    required SessionController controller,
+    required super.child,
+  }) : super(notifier: controller);
+
+  static SessionController of(BuildContext context) {
+    final scope = context.dependOnInheritedWidgetOfExactType<SessionScope>();
+    assert(scope != null, 'SessionScope introuvable');
+    return scope!.notifier!;
+  }
+}
 
 class SessionController extends ChangeNotifier {
   SessionController({ApiClient? api}) : api = api ?? ApiClient();
@@ -36,7 +50,10 @@ class SessionController extends ChangeNotifier {
     error = null;
     notifyListeners();
     try {
-      final json = await api.post('/login', {'email': email, 'password': password});
+      final json = await api.post('/login', {
+        'email': email,
+        'password': password,
+      });
       api.token = json['token']?.toString();
       user = UserAccount.fromJson(json['user'] as Map<String, dynamic>);
       final prefs = await SharedPreferences.getInstance();

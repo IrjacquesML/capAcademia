@@ -53,6 +53,16 @@
                 <x-icon name="building" class="h-6 w-6 sm:h-4 sm:w-4" />
                 Nouvelle faculté
             </a>
+            <a href="{{ route('admin.options.create') }}"
+               class="flex aspect-square min-w-0 flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 text-center text-[11px] font-medium leading-tight text-slate-800 shadow-sm hover:border-indigo-300 sm:aspect-auto sm:min-h-11 sm:flex-row sm:px-4 sm:py-2 sm:text-sm">
+                <x-icon name="plus" class="h-6 w-6 sm:h-4 sm:w-4" />
+                Nouvelle option
+            </a>
+            <a href="{{ route('admin.promotions.create') }}"
+               class="flex aspect-square min-w-0 flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 text-center text-[11px] font-medium leading-tight text-slate-800 shadow-sm hover:border-indigo-300 sm:aspect-auto sm:min-h-11 sm:flex-row sm:px-4 sm:py-2 sm:text-sm">
+                <x-icon name="plus" class="h-6 w-6 sm:h-4 sm:w-4" />
+                Nouvelle promotion
+            </a>
         @endif
     </div>
 

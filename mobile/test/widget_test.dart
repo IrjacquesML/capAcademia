@@ -8,23 +8,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:capacademia_mobile/main.dart';
+import 'package:capacademia_mobile/screens/login_screen.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('login screen shows the centered brand and developer footer', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    final logo = find.byType(Image);
+    final brandName = find.text('CapAcademia');
+    expect(logo, findsOneWidget);
+    expect(brandName, findsOneWidget);
+    expect(
+      tester.getTopLeft(brandName).dy,
+      greaterThan(tester.getBottomLeft(logo).dy),
+    );
+    expect(find.textContaining('ML DATA'), findsOneWidget);
+    expect(find.textContaining('+243982401411'), findsOneWidget);
   });
 }

@@ -38,7 +38,10 @@ class AdminAuthorizationTest extends TestCase
             ->get(route('admin.dashboard'))
             ->assertOk()
             ->assertSee('Administration CapAcademia')
-            ->assertSee('Facultés');
+            ->assertSee('Facultés')
+            ->assertSee('Nouvelle faculté')
+            ->assertSee('Nouvelle option')
+            ->assertSee('Nouvelle promotion');
     }
 
     public function test_an_admin_cannot_open_faculty_management(): void
@@ -47,6 +50,14 @@ class AdminAuthorizationTest extends TestCase
 
         $this->actingAs($admin)
             ->get(route('admin.faculties.index'))
+            ->assertForbidden();
+
+        $this->actingAs($admin)
+            ->get(route('admin.options.create'))
+            ->assertForbidden();
+
+        $this->actingAs($admin)
+            ->get(route('admin.promotions.create'))
             ->assertForbidden();
 
         $this->actingAs($admin)
@@ -105,6 +116,40 @@ class AdminAuthorizationTest extends TestCase
         $this->assertDatabaseHas('users', [
             'email' => 'nouveau.admin@capacademia.test',
             'role' => UserRole::Admin->value,
+        ]);
+    }
+
+    public function test_a_super_admin_can_create_faculties_options_and_promotions(): void
+    {
+        $super = User::factory()->superAdmin()->create();
+
+        $this->actingAs($super)
+            ->post(route('admin.faculties.store'), [
+                'name' => 'Faculté de test',
+                'code' => 'FTEST',
+            ])
+            ->assertRedirect(route('admin.faculties.index'));
+
+        $faculty = Faculty::query()->where('code', 'FTEST')->firstOrFail();
+
+        $this->post(route('admin.options.store'), [
+            'faculty_id' => $faculty->id,
+            'name' => 'Option de test',
+        ])->assertRedirect(route('admin.options.index'));
+
+        $this->post(route('admin.promotions.store'), [
+            'name' => 'Promotion de test',
+            'level' => 1,
+        ])->assertRedirect(route('admin.promotions.index'));
+
+        $this->assertDatabaseHas('faculties', ['name' => 'Faculté de test']);
+        $this->assertDatabaseHas('options', [
+            'faculty_id' => $faculty->id,
+            'name' => 'Option de test',
+        ]);
+        $this->assertDatabaseHas('promotions', [
+            'name' => 'Promotion de test',
+            'level' => 1,
         ]);
     }
 }

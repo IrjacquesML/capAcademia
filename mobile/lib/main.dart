@@ -4,20 +4,6 @@ import 'screens/login_screen.dart';
 import 'state/session.dart';
 import 'widgets/shell.dart';
 
-class SessionScope extends InheritedNotifier<SessionController> {
-  const SessionScope({
-    super.key,
-    required SessionController controller,
-    required super.child,
-  }) : super(notifier: controller);
-
-  static SessionController of(BuildContext context) {
-    final scope = context.dependOnInheritedWidgetOfExactType<SessionScope>();
-    assert(scope != null, 'SessionScope introuvable');
-    return scope!.notifier!;
-  }
-}
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final session = SessionController();
@@ -41,15 +27,21 @@ class CapAcademiaApp extends StatelessWidget {
             title: 'CapAcademia',
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4F46E5)),
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: const Color(0xFF4F46E5),
+              ),
               useMaterial3: true,
-              inputDecorationTheme: const InputDecorationTheme(border: OutlineInputBorder()),
+              inputDecorationTheme: const InputDecorationTheme(
+                border: OutlineInputBorder(),
+              ),
             ),
             home: !session.ready
-                ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+                ? const Scaffold(
+                    body: Center(child: CircularProgressIndicator()),
+                  )
                 : session.user == null
-                    ? const LoginScreen()
-                    : const StudentShell(),
+                ? const LoginScreen()
+                : const StudentShell(),
           );
         },
       ),
