@@ -35,6 +35,10 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(10)->by((string) $request->ip());
         });
 
+        RateLimiter::for('web-login', function (Request $request) {
+            return Limit::perMinute(10)->by((string) $request->ip());
+        });
+
         Event::listen(Login::class, [RecordAuthenticationAudit::class, 'handleLogin']);
         Event::listen(Logout::class, [RecordAuthenticationAudit::class, 'handleLogout']);
         Event::listen(Failed::class, [RecordAuthenticationAudit::class, 'handleFailed']);

@@ -4,34 +4,25 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
-use App\Services\ChapterUnlockService;
+use App\Services\StudentCatalogService;
 use App\Support\StudentApi;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CourseController extends Controller
 {
-    public function __construct(private readonly ChapterUnlockService $unlock) {}
+    public function __construct(private readonly StudentCatalogService $catalog) {}
 
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
         $this->authorize('viewAny', Course::class);
 
-        $courses = Course::query()
-            ->visibleTo($user)
-            ->with(['faculty:id,name', 'option:id,name', 'promotion:id,name'])
-            ->withCount(['chapters as published_chapters_count' => fn ($query) => $query->published()])
-            ->orderBy('title')
-            ->get();
+        $courses = $this->catalog->coursesWithProgress($user);
 
         return response()->json([
             'user' => StudentApi::user($user),
-            'courses' => $courses->map(function (Course $course) {
-                $course->setAttribute('progress_total', $course->published_chapters_count);
-
-                return StudentApi::courseCard($course);
-            })->values(),
+            'courses' => $courses->map(fn (Course $course) => StudentApi::courseCard($course))->values(),
         ]);
     }
 
@@ -53,7 +44,7 @@ class CourseController extends Controller
             'chapters.progress' => fn ($query) => $query->where('user_id', $request->user()->id),
         ]);
 
-        $this->unlock->decorate($request->user(), $course->chapters);
+        $this->catalog->decorateCourseProgress($request->user(), $course);
 
         return response()->json([
             'course' => [

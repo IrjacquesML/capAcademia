@@ -11,5 +11,5 @@ return [
     | et post_max_size).
     |
     */
-    'word_import_max_kilobytes' => (int) env('WORD_IMPORT_MAX_KB', 65536),
+    'word_import_max_kilobytes' => (int) env('WORD_IMPORT_MAX_KB', 262144),
 ];

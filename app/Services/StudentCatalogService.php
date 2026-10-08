@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Chapter;
+use App\Models\ChapterProgress;
 use App\Models\Course;
 use App\Models\QuizAttempt;
 use App\Models\User;
@@ -38,25 +39,34 @@ class StudentCatalogService
             ->get();
 
         foreach ($courses as $course) {
-            $this->unlock->decorate($user, $course->chapters);
-            $total = $course->chapters->count();
-            $done = $course->chapters->filter(
-                fn (Chapter $chapter): bool => $this->unlock->previousRequirementMet($user, $chapter),
-            )->count();
-
-            $course->setAttribute('progress_total', $total);
-            $course->setAttribute('progress_done', $done);
-            $course->setAttribute('progress_percent', $total > 0 ? (int) round(($done / $total) * 100) : 0);
-            $course->setAttribute(
-                'resume_chapter',
-                $course->chapters->first(
-                    fn (Chapter $chapter): bool => $chapter->is_unlocked
-                        && ! $this->unlock->previousRequirementMet($user, $chapter),
-                ),
-            );
+            $this->decorateCourseProgress($user, $course);
         }
 
         return $courses;
+    }
+
+    public function decorateCourseProgress(User $user, Course $course): void
+    {
+        $this->unlock->decorate($user, $course->chapters);
+        $total = $course->chapters->count();
+        $done = $course->chapters->filter(
+            fn (Chapter $chapter): bool => $chapter->progress->contains(
+                fn (ChapterProgress $progress): bool => $progress->completed_at !== null,
+            ),
+        )->count();
+
+        $course->setAttribute('progress_total', $total);
+        $course->setAttribute('progress_done', $done);
+        $course->setAttribute('progress_percent', $total > 0 ? (int) round(($done / $total) * 100) : 0);
+        $course->setAttribute(
+            'resume_chapter',
+            $course->chapters->first(
+                fn (Chapter $chapter): bool => $chapter->is_unlocked
+                    && ! $chapter->progress->contains(
+                        fn (ChapterProgress $progress): bool => $progress->completed_at !== null,
+                    ),
+            ),
+        );
     }
 
     public function quizAttemptCount(User $user): int

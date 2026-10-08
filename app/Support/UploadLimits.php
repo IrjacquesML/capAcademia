@@ -6,7 +6,7 @@ class UploadLimits
 {
     public static function wordImportMaxKilobytes(): int
     {
-        $configured = max(1, (int) config('uploads.word_import_max_kilobytes', 65536));
+        $configured = max(1, (int) config('uploads.word_import_max_kilobytes', 262144));
 
         return (int) min($configured, self::phpUploadKilobytes());
     }
@@ -36,7 +36,7 @@ class UploadLimits
             fn (int $value): bool => $value > 0,
         );
 
-        return $values === [] ? 65536 : (int) min($values);
+        return $values === [] ? 262144 : (int) min($values);
     }
 
     public static function kilobytesToMegabytesLabel(int $kilobytes): string

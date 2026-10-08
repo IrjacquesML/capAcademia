@@ -73,6 +73,43 @@ class WordCourseImportTest extends TestCase
         }
     }
 
+    public function test_ajax_import_redirects_to_the_course_with_a_success_message(): void
+    {
+        $world = $this->createAcademicWorld();
+        $super = User::factory()->superAdmin()->create();
+        $path = $this->makeDocx();
+
+        try {
+            $response = $this->actingAs($super)->postJson(route('admin.courses.import.store'), [
+                'faculty_id' => $world['faculty']->id,
+                'option_id' => $world['option']->id,
+                'promotion_id' => $world['promotion']->id,
+                'is_published' => '1',
+                'document' => new UploadedFile(
+                    $path,
+                    'algorithmique.docx',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    null,
+                    true,
+                ),
+            ]);
+        } finally {
+            @unlink($path);
+        }
+
+        $course = Course::query()->where('title', 'Algorithmique importée')->firstOrFail();
+        $message = 'Cours importé : 2 chapitre(s).';
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('message', $message)
+            ->assertJsonPath('redirect_url', route('admin.courses.show', $course));
+
+        $this->get(route('admin.courses.show', $course))
+            ->assertOk()
+            ->assertSee($message);
+    }
+
     public function test_a_faculty_admin_cannot_import_into_another_faculty(): void
     {
         $world = $this->createAcademicWorld();
@@ -134,7 +171,10 @@ class WordCourseImportTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.courses.import'))
             ->assertOk()
-            ->assertSee('Taille maximale');
+            ->assertSee('Taille maximale')
+            ->assertSee('data-course-import-form', false)
+            ->assertSee('data-upload-progress', false)
+            ->assertSee('request.upload.addEventListener', false);
     }
 
     public function test_a_student_cannot_download_the_word_template(): void

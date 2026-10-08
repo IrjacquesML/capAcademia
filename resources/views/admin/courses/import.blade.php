@@ -30,6 +30,7 @@
     </div>
 
     <form method="POST" action="{{ route('admin.courses.import.store') }}" enctype="multipart/form-data"
+          data-course-import-form
           class="w-full max-w-lg rounded-xl border bg-white p-4 sm:p-6">
         @csrf
 
@@ -53,6 +54,18 @@
             Publier immédiatement
         </label>
 
+        <div data-upload-progress hidden class="mb-4" aria-live="polite">
+            <div class="mb-2 flex justify-between gap-4 text-sm text-slate-600">
+                <span data-upload-status>Préparation de l’envoi…</span>
+                <span data-upload-percent>0 %</span>
+            </div>
+            <div class="h-2 overflow-hidden rounded-full bg-slate-200">
+                <div data-upload-bar role="progressbar" aria-label="Progression de l’envoi du fichier"
+                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+                     class="h-full w-0 rounded-full bg-indigo-600 transition-[width] duration-150"></div>
+            </div>
+        </div>
+
         @if ($errors->any())
             <ul class="mb-4 list-disc ps-5 text-sm text-red-600">
                 @foreach ($errors->all() as $error)
@@ -61,6 +74,81 @@
             </ul>
         @endif
 
-        <button class="min-h-12 w-full rounded-xl bg-indigo-600 px-4 py-3 text-white sm:w-auto">Importer et découper</button>
+        <button type="submit" class="min-h-12 w-full rounded-xl bg-indigo-600 px-4 py-3 text-white sm:w-auto">Importer et découper</button>
     </form>
+
+    <script>
+        document.querySelectorAll('[data-course-import-form]').forEach((form) => {
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const progress = form.querySelector('[data-upload-progress]');
+                const status = form.querySelector('[data-upload-status]');
+                const percent = form.querySelector('[data-upload-percent]');
+                const bar = form.querySelector('[data-upload-bar]');
+                const submit = form.querySelector('button[type="submit"]');
+                const request = new XMLHttpRequest();
+
+                progress.hidden = false;
+                submit.disabled = true;
+                submit.textContent = 'Importation en cours…';
+
+                request.open('POST', form.action);
+                request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                request.setRequestHeader('Accept', 'application/json');
+                request.upload.addEventListener('progress', (uploadEvent) => {
+                    if (!uploadEvent.lengthComputable) {
+                        status.textContent = 'Envoi du fichier en cours…';
+                        return;
+                    }
+
+                    const uploaded = Math.min(100, Math.round((uploadEvent.loaded / uploadEvent.total) * 100));
+                    percent.textContent = `${uploaded} %`;
+                    bar.style.width = `${uploaded}%`;
+                    bar.setAttribute('aria-valuenow', String(uploaded));
+                    status.textContent = uploaded === 100
+                        ? 'Fichier envoyé. Importation du cours en cours…'
+                        : 'Envoi du fichier en cours…';
+                });
+
+                request.addEventListener('load', () => {
+                    if (request.status >= 200 && request.status < 300) {
+                        try {
+                            const response = JSON.parse(request.responseText);
+                            if (response.redirect_url) {
+                                window.location.assign(response.redirect_url);
+                                return;
+                            }
+                        } catch {
+                            status.textContent = 'Réponse invalide du serveur. Réessayez ou rechargez la page.';
+                        }
+
+                        submit.disabled = false;
+                        submit.textContent = 'Importer et découper';
+                        return;
+                    }
+
+                    let message = 'L’importation a échoué. Vérifiez le fichier et réessayez.';
+                    try {
+                        const response = JSON.parse(request.responseText);
+                        message = response.message || message;
+                    } catch {}
+
+                    status.textContent = request.status === 413
+                        ? 'Le fichier dépasse la taille maximale autorisée par le serveur.'
+                        : message;
+                    submit.disabled = false;
+                    submit.textContent = 'Importer et découper';
+                });
+
+                request.addEventListener('error', () => {
+                    status.textContent = 'Impossible de contacter le serveur. Vérifiez votre connexion et réessayez.';
+                    submit.disabled = false;
+                    submit.textContent = 'Importer et découper';
+                });
+
+                request.send(new FormData(form));
+            });
+        });
+    </script>
 </x-layouts.admin>

@@ -26,6 +26,21 @@ class StudentRegistrationTest extends TestCase
             ->assertSee(route('register'));
     }
 
+    public function test_web_login_attempts_are_rate_limited(): void
+    {
+        for ($attempt = 0; $attempt < 10; $attempt++) {
+            $this->post(route('login'), [
+                'email' => 'unknown@capacademia.test',
+                'password' => 'incorrect-password',
+            ])->assertRedirect();
+        }
+
+        $this->post(route('login'), [
+            'email' => 'unknown@capacademia.test',
+            'password' => 'incorrect-password',
+        ])->assertStatus(429);
+    }
+
     public function test_a_student_can_register_and_is_signed_in(): void
     {
         $faculty = Faculty::factory()->create();

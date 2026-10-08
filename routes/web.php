@@ -31,7 +31,7 @@ Route::get('/', function () {
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
-    Route::post('/login', [LoginController::class, 'store']);
+    Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:web-login');
     Route::get('/inscription', [RegistrationController::class, 'create'])->name('register');
     Route::post('/inscription', [RegistrationController::class, 'store'])->middleware('throttle:6,1');
 });

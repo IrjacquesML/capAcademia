@@ -10,6 +10,7 @@ use App\Models\Promotion;
 use App\Services\WordImport\WordCourseImporter;
 use App\Services\WordImport\WordCourseTemplateGenerator;
 use App\Support\UploadLimits;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -54,7 +55,7 @@ class CourseImportController extends Controller
         ]);
     }
 
-    public function store(Request $request, WordCourseImporter $importer): RedirectResponse
+    public function store(Request $request, WordCourseImporter $importer): RedirectResponse|JsonResponse
     {
         $this->authorize('create', Course::class);
 
@@ -79,15 +80,35 @@ class CourseImportController extends Controller
                 publish: $request->boolean('is_published', true),
             );
         } catch (InvalidArgumentException $exception) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $exception->getMessage()], 422);
+            }
+
             return back()->withInput()->with('error', $exception->getMessage());
         } catch (Throwable $exception) {
             report($exception);
 
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'L’import a échoué. Vérifiez que le fichier est un .docx bien structuré.',
+                ], 500);
+            }
+
             return back()->withInput()->with('error', 'L’import a échoué. Vérifiez que le fichier est un .docx bien structuré.');
+        }
+
+        $message = 'Cours importé : '.$course->chapters->count().' chapitre(s).';
+        if ($request->expectsJson()) {
+            session()->flash('status', $message);
+
+            return response()->json([
+                'redirect_url' => route('admin.courses.show', $course),
+                'message' => $message,
+            ]);
         }
 
         return redirect()
             ->route('admin.courses.show', $course)
-            ->with('status', 'Cours importé : '.$course->chapters->count().' chapitre(s).');
+            ->with('status', $message);
     }
 }
